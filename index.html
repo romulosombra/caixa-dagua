@@ -1,126 +1,179 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Monitor de Distância</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<title>Caixa D'Água</title>
 
-  <style>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial, Helvetica, sans-serif;
-    }
+<style>
 
-    body{
-      width:100vw;
-      height:100vh;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
+}
 
-      display:flex;
-      justify-content:center;
-      align-items:center;
+body{
 
-      background:linear-gradient(135deg,#0f172a,#1e293b);
-      color:white;
-    }
+  width:100vw;
+  height:100vh;
 
-    .card{
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
-      width:400px;
-      padding:40px;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
 
-      border-radius:25px;
+  color:white;
+}
 
-      background:rgba(255,255,255,0.08);
+.card{
 
-      backdrop-filter:blur(10px);
+  width:420px;
 
-      text-align:center;
+  padding:40px;
 
-      box-shadow:0 0 30px rgba(0,0,0,0.3);
-    }
+  border-radius:25px;
 
-    h1{
-      margin-bottom:30px;
-      font-size:2rem;
-      font-weight:normal;
-    }
+  background:rgba(255,255,255,0.08);
 
-    .distancia{
+  backdrop-filter:blur(10px);
 
-      font-size:5rem;
-      font-weight:bold;
+  text-align:center;
 
-      margin-bottom:10px;
+  box-shadow:0 0 30px rgba(0,0,0,0.3);
+}
 
-      color:#38bdf8;
-    }
+.titulo{
 
-    .cm{
-      font-size:1.5rem;
-      opacity:0.8;
-    }
+  font-size:2rem;
 
-    .status{
-      margin-top:25px;
-      font-size:0.9rem;
-      opacity:0.7;
-    }
+  margin-bottom:30px;
+}
 
-  </style>
+.valor{
+
+  font-size:7rem;
+
+  font-weight:bold;
+
+  color:#38bdf8;
+}
+
+.status-agua{
+
+  margin-top:20px;
+
+  font-size:2rem;
+
+  font-weight:bold;
+}
+
+.conexao{
+
+  margin-top:20px;
+
+  opacity:0.7;
+}
+
+</style>
 
 </head>
 <body>
 
-  <div class="card">
+<div class="card">
 
-    <h1>Distância Atual</h1>
+<div class="titulo">
+Caixa D'Água
+</div>
 
-    <div class="distancia" id="valor">
-      --
-    </div>
+<div class="valor" id="porcentagem">
+--
+</div>
 
-    <div class="cm">
-      cm
-    </div>
+<div style="font-size:2rem;">
+%
+</div>
 
-    <div class="status" id="status">
-      Conectando...
-    </div>
+<div class="status-agua" id="mensagem">
+Aguardando dados...
+</div>
 
-  </div>
+<div class="conexao" id="status">
+Conectando MQTT...
+</div>
+
+</div>
 
 <script>
 
-  const statusText = document.getElementById("status");
-  const valor = document.getElementById("valor");
+const porcentagem =
+document.getElementById("porcentagem");
 
-  const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+const mensagem =
+document.getElementById("mensagem");
 
-  client.on('connect', () => {
+const statusText =
+document.getElementById("status");
 
-    statusText.innerHTML = "Conectado ao MQTT";
+const client =
+mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
-    client.subscribe('estacio/trabalho/caixadagua');
+client.on('connect', () => {
 
-  });
+  statusText.innerHTML = "Conectado";
 
-  client.on('message', (topic, message) => {
+  client.subscribe('estacio/trabalho/caixadagua');
 
-    valor.innerHTML = parseFloat(message.toString()).toFixed(1);
+});
 
-  });
+client.on('message', (topic, message) => {
 
-  client.on('error', () => {
+  let valor =
+  parseFloat(message.toString());
 
-    statusText.innerHTML = "Erro de conexão";
+  valor = Math.round(valor);
 
-  });
+  porcentagem.innerHTML = valor;
+
+  if(valor >= 90){
+
+    mensagem.innerHTML = "Cheio";
+
+  }
+  else if(valor >= 50){
+
+    mensagem.innerHTML = "Meio cheio";
+
+  }
+  else if(valor >= 20){
+
+    mensagem.innerHTML = "Meio vazio";
+
+  }
+  else if(valor >= 2){
+
+    mensagem.innerHTML = "Quase vazio";
+
+  }
+  else{
+
+    mensagem.innerHTML = "Vazio";
+
+  }
+
+});
+
+client.on('error', () => {
+
+  statusText.innerHTML = "Erro de conexão";
+
+});
 
 </script>
 
