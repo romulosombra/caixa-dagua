@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Monitor de Distância</title>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      width:100vw;
+      height:100vh;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      color:white;
+    }
+
+    .card{
+
+      width:400px;
+      padding:40px;
+
+      border-radius:25px;
+
+      background:rgba(255,255,255,0.08);
+
+      backdrop-filter:blur(10px);
+
+      text-align:center;
+
+      box-shadow:0 0 30px rgba(0,0,0,0.3);
+    }
+
+    h1{
+      margin-bottom:30px;
+      font-size:2rem;
+      font-weight:normal;
+    }
+
+    .distancia{
+
+      font-size:5rem;
+      font-weight:bold;
+
+      margin-bottom:10px;
+
+      color:#38bdf8;
+    }
+
+    .cm{
+      font-size:1.5rem;
+      opacity:0.8;
+    }
+
+    .status{
+      margin-top:25px;
+      font-size:0.9rem;
+      opacity:0.7;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <div class="card">
+
+    <h1>Distância Atual</h1>
+
+    <div class="distancia" id="valor">
+      --
+    </div>
+
+    <div class="cm">
+      cm
+    </div>
+
+    <div class="status" id="status">
+      Conectando...
+    </div>
+
+  </div>
+
+<script>
+
+  const statusText = document.getElementById("status");
+  const valor = document.getElementById("valor");
+
+  const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+  client.on('connect', () => {
+
+    statusText.innerHTML = "Conectado ao MQTT";
+
+    client.subscribe('estacio/trabalho/caixadagua');
+
+  });
+
+  client.on('message', (topic, message) => {
+
+    valor.innerHTML = parseFloat(message.toString()).toFixed(1);
+
+  });
+
+  client.on('error', () => {
+
+    statusText.innerHTML = "Erro de conexão";
+
+  });
+
+</script>
+
+</body>
+</html>
