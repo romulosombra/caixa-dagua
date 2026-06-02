@@ -5,108 +5,201 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Caixa D'Água</title>
+<title>Monitoramento de Caixa D'Água</title>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <style>
 
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
 
-  width:100vw;
-  height:100vh;
+    min-height:100vh;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 
-  background:linear-gradient(135deg,#0f172a,#1e293b);
+    background:linear-gradient(135deg,#0f172a,#1e293b);
 
-  color:white;
+    color:white;
 }
 
 .card{
 
-  width:420px;
+    width:500px;
 
-  padding:40px;
+    padding:30px;
 
-  border-radius:25px;
+    border-radius:25px;
 
-  background:rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.08);
 
-  backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
 
-  text-align:center;
+    text-align:center;
 
-  box-shadow:0 0 30px rgba(0,0,0,0.3);
+    box-shadow:0 0 30px rgba(0,0,0,0.4);
 }
 
 .titulo{
 
-  font-size:2rem;
+    font-size:2rem;
 
-  margin-bottom:30px;
+    margin-bottom:25px;
+
+    font-weight:bold;
+}
+
+.tanque{
+
+    width:180px;
+    height:250px;
+
+    margin:0 auto 25px auto;
+
+    border:5px solid white;
+
+    border-radius:20px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background:rgba(255,255,255,0.05);
+}
+
+.agua{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+
+    height:0%;
+
+    background:linear-gradient(
+        to top,
+        #0284c7,
+        #38bdf8
+    );
+
+    transition:height 1s ease;
+}
+
+.agua::before{
+
+    content:"";
+
+    position:absolute;
+
+    top:-10px;
+
+    left:0;
+
+    width:200%;
+
+    height:20px;
+
+    background:rgba(255,255,255,0.3);
+
+    border-radius:50%;
+
+    animation:onda 3s linear infinite;
+}
+
+@keyframes onda{
+
+    from{
+        transform:translateX(0);
+    }
+
+    to{
+        transform:translateX(-50%);
+    }
+
 }
 
 .valor{
 
-  font-size:7rem;
+    font-size:5rem;
 
-  font-weight:bold;
+    font-weight:bold;
 
-  color:#38bdf8;
+    color:#38bdf8;
 }
 
 .status-agua{
 
-  margin-top:20px;
+    margin-top:10px;
 
-  font-size:2rem;
+    font-size:1.8rem;
 
-  font-weight:bold;
+    font-weight:bold;
 }
 
 .conexao{
 
-  margin-top:20px;
+    margin-top:20px;
 
-  opacity:0.7;
+    opacity:0.8;
+
+    font-size:0.9rem;
+}
+
+.rodape{
+
+    margin-top:15px;
+
+    opacity:0.6;
+
+    font-size:0.8rem;
 }
 
 </style>
 
 </head>
+
 <body>
 
 <div class="card">
 
-<div class="titulo">
-Caixa D'Água
-</div>
+    <div class="titulo">
+        Monitoramento de Caixa D'Água
+    </div>
 
-<div class="valor" id="porcentagem">
---
-</div>
+    <div class="tanque">
 
-<div style="font-size:2rem;">
-%
-</div>
+        <div class="agua" id="agua"></div>
 
-<div class="status-agua" id="mensagem">
-Aguardando dados...
-</div>
+    </div>
 
-<div class="conexao" id="status">
-Conectando MQTT...
-</div>
+    <div class="valor" id="porcentagem">
+        --
+    </div>
+
+    <div style="font-size:1.5rem;">
+        %
+    </div>
+
+    <div class="status-agua" id="mensagem">
+        Aguardando dados...
+    </div>
+
+    <div class="conexao" id="status">
+        Conectando ao MQTT...
+    </div>
+
+    <div class="rodape">
+        Projeto IoT - Estácio
+    </div>
 
 </div>
 
@@ -121,57 +214,97 @@ document.getElementById("mensagem");
 const statusText =
 document.getElementById("status");
 
+const agua =
+document.getElementById("agua");
+
 const client =
 mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
 client.on('connect', () => {
 
-  statusText.innerHTML = "Conectado";
+    statusText.innerHTML =
+    "🟢 Conectado ao broker MQTT";
 
-  client.subscribe('estacio/trabalho/caixadagua');
+    client.subscribe(
+    'estacio/trabalho/caixadagua'
+    );
 
 });
 
 client.on('message', (topic, message) => {
 
-  let valor =
-  parseFloat(message.toString());
+    let valor =
+    parseFloat(message.toString());
 
-  valor = Math.round(valor);
+    valor = Math.round(valor);
 
-  porcentagem.innerHTML = valor;
+    if(valor > 100) valor = 100;
+    if(valor < 0) valor = 0;
 
-  if(valor >= 90){
+    porcentagem.innerHTML = valor;
 
-    mensagem.innerHTML = "Cheio";
+    agua.style.height =
+    valor + "%";
 
-  }
-  else if(valor >= 50){
+    if(valor >= 90){
 
-    mensagem.innerHTML = "Meio cheio";
+        mensagem.innerHTML =
+        "Cheio";
 
-  }
-  else if(valor >= 20){
+        agua.style.background =
+        "linear-gradient(to top,#0284c7,#38bdf8)";
 
-    mensagem.innerHTML = "Meio vazio";
+    }
+    else if(valor >= 50){
 
-  }
-  else if(valor >= 2){
+        mensagem.innerHTML =
+        "Meio cheio";
 
-    mensagem.innerHTML = "Quase vazio";
+        agua.style.background =
+        "linear-gradient(to top,#0284c7,#38bdf8)";
 
-  }
-  else{
+    }
+    else if(valor >= 20){
 
-    mensagem.innerHTML = "Vazio";
+        mensagem.innerHTML =
+        "Meio vazio";
 
-  }
+        agua.style.background =
+        "linear-gradient(to top,#eab308,#fde047)";
+
+    }
+    else if(valor >= 2){
+
+        mensagem.innerHTML =
+        "Quase vazio";
+
+        agua.style.background =
+        "linear-gradient(to top,#f97316,#fb923c)";
+
+    }
+    else{
+
+        mensagem.innerHTML =
+        "Vazio";
+
+        agua.style.background =
+        "linear-gradient(to top,#dc2626,#ef4444)";
+
+    }
 
 });
 
 client.on('error', () => {
 
-  statusText.innerHTML = "Erro de conexão";
+    statusText.innerHTML =
+    "🔴 Erro de conexão";
+
+});
+
+client.on('close', () => {
+
+    statusText.innerHTML =
+    "🟠 Desconectado";
 
 });
 
