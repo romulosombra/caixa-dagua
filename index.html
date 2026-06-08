@@ -29,11 +29,13 @@ body{
     background:linear-gradient(135deg,#0f172a,#1e293b);
 
     color:white;
+
+    padding:20px;
 }
 
 .card{
 
-    width:500px;
+    width:550px;
 
     padding:30px;
 
@@ -163,6 +165,53 @@ body{
     font-size:0.8rem;
 }
 
+.sugestoes{
+
+    margin-top:25px;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    background:rgba(255,255,255,0.05);
+
+    text-align:left;
+}
+
+.sugestoes h3{
+
+    text-align:center;
+
+    margin-bottom:15px;
+}
+
+#litros{
+
+    text-align:center;
+
+    font-size:1.4rem;
+
+    font-weight:bold;
+
+    margin-bottom:15px;
+
+    color:#38bdf8;
+}
+
+.item{
+
+    margin-bottom:12px;
+
+    font-size:1rem;
+}
+
+.item span{
+
+    font-weight:bold;
+
+    color:#38bdf8;
+}
+
 </style>
 
 </head>
@@ -201,6 +250,36 @@ body{
         Projeto IoT - Estácio
     </div>
 
+    <div class="sugestoes">
+
+        <h3>Capacidade Atual</h3>
+
+        <div id="litros">
+            --
+        </div>
+
+        <div class="item">
+            🚿 Banhos possíveis:
+            <span id="banhos">--</span>
+        </div>
+
+        <div class="item">
+            👕 Lavagens de roupa:
+            <span id="roupa">--</span>
+        </div>
+
+        <div class="item">
+            🍽️ Lavagens de louça:
+            <span id="louca">--</span>
+        </div>
+
+        <div class="item">
+            🚽 Descargas:
+            <span id="descarga">--</span>
+        </div>
+
+    </div>
+
 </div>
 
 <script>
@@ -216,6 +295,21 @@ document.getElementById("status");
 
 const agua =
 document.getElementById("agua");
+
+const litrosDiv =
+document.getElementById("litros");
+
+const banhosDiv =
+document.getElementById("banhos");
+
+const roupaDiv =
+document.getElementById("roupa");
+
+const loucaDiv =
+document.getElementById("louca");
+
+const descargaDiv =
+document.getElementById("descarga");
 
 const client =
 mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
@@ -245,6 +339,24 @@ client.on('message', (topic, message) => {
 
     agua.style.height =
     valor + "%";
+
+    const litros =
+    Math.round((valor / 100) * 1000);
+
+    litrosDiv.innerHTML =
+    litros + " litros disponíveis";
+
+    banhosDiv.innerHTML =
+    Math.floor(litros / 75);
+
+    roupaDiv.innerHTML =
+    Math.floor(litros / 150);
+
+    loucaDiv.innerHTML =
+    Math.floor(litros / 15);
+
+    descargaDiv.innerHTML =
+    Math.floor(litros / 12);
 
     if(valor >= 90){
 
