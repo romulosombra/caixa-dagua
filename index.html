@@ -311,8 +311,12 @@ document.getElementById("louca");
 const descargaDiv =
 document.getElementById("descarga");
 
-const client =
-mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+const client = mqtt.connect(
+'wss://398fe9448fc04406a714f5d2091f2ed8.s1.eu.hivemq.cloud:8884/mqtt',
+{
+    username:'estacio_romulo',
+    password:'Rom123@'
+});
 
 client.on('connect', () => {
 
